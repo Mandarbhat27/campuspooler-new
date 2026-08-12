@@ -67,6 +67,13 @@ export async function getProfile() {
   return request('/profile/me');
 }
 
+export async function updateVehicle(data: { name: string; mileage_kmpl: number; fuel_type: string; }) {
+  return request('/profile/update-vehicle', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
 export async function postRide(payload: { origin_lat: number; origin_lon: number; origin_name: string; departure_time: string; seats: number; }) {
   return request('/rides/post', {
     method: 'POST',

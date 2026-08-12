@@ -3,7 +3,7 @@ from datetime import datetime
 def user_schema(
     name, email, password_hash,
     roll_number='', college='', year='', branch='',
-    phone='', vehicle=None, emergency_contact=None
+    phone='', vehicle=None, emergency_contact=None, role='rider'
 ):
     return {
         'name':         name,
@@ -14,6 +14,7 @@ def user_schema(
         'year':         year,
         'branch':       branch,
         'phone':        phone,
+        'role':         role,
         'vehicle': vehicle or {
             'name':         '',
             'fuel_type':    'petrol',

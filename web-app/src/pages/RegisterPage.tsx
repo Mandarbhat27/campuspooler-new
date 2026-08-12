@@ -16,6 +16,7 @@ function RegisterPage() {
     roll_number: '',
     year: '1st',
     branch: 'CSE',
+    role: 'rider',
     vehicle_name: '',
     mileage_kmpl: '',
     fuel_type: 'petrol',
@@ -43,12 +44,15 @@ function RegisterPage() {
         college: 'RVCE',
         year: form.year,
         branch: form.branch,
-        vehicle: {
-          name: form.vehicle_name.trim(),
-          fuel_type: form.fuel_type,
-          mileage_kmpl: Number(form.mileage_kmpl) || 40,
-          reg_number: '',
-        },
+        role: form.role,
+        ...(form.role === 'rider' ? {
+          vehicle: {
+            name: form.vehicle_name.trim(),
+            fuel_type: form.fuel_type,
+            mileage_kmpl: Number(form.mileage_kmpl) || 40,
+            reg_number: '',
+          },
+        } : {}),
       };
       await register(payload);
       setMessage('Registered successfully. You can now sign in.');
@@ -138,38 +142,54 @@ function RegisterPage() {
             </label>
           </div>
           <label>
-            Vehicle name
-            <input
-              value={form.vehicle_name}
-              onChange={(e) => handleChange('vehicle_name', e.target.value)}
-              required
-            />
+            I want to sign up as
+            <select
+              value={form.role}
+              onChange={(e) => handleChange('role', e.target.value)}
+            >
+              <option value="rider">Rider</option>
+              <option value="passenger">Passenger</option>
+            </select>
           </label>
-          <div className="form-row">
-            <label>
-              Mileage (kmpl)
-              <input
-                type="number"
-                min="1"
-                value={form.mileage_kmpl}
-                onChange={(e) => handleChange('mileage_kmpl', e.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Fuel type
-              <select
-                value={form.fuel_type}
-                onChange={(e) => handleChange('fuel_type', e.target.value)}
-              >
-                {fuels.map((fuel) => (
-                  <option key={fuel} value={fuel}>
-                    {fuel}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+          {form.role === 'rider' ? (
+            <>
+              <label>
+                Vehicle name
+                <input
+                  value={form.vehicle_name}
+                  onChange={(e) => handleChange('vehicle_name', e.target.value)}
+                  required
+                />
+              </label>
+              <div className="form-row">
+                <label>
+                  Mileage (kmpl)
+                  <input
+                    type="number"
+                    min="1"
+                    value={form.mileage_kmpl}
+                    onChange={(e) => handleChange('mileage_kmpl', e.target.value)}
+                    required
+                  />
+                </label>
+                <label>
+                  Fuel type
+                  <select
+                    value={form.fuel_type}
+                    onChange={(e) => handleChange('fuel_type', e.target.value)}
+                  >
+                    {fuels.map((fuel) => (
+                      <option key={fuel} value={fuel}>
+                        {fuel}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </>
+          ) : (
+            <p className="small-text">Passengers can sign up without vehicle details and will still be able to request rides.</p>
+          )}
           <button type="submit" disabled={loading}>
             {loading ? 'Registering…' : 'Register'}
           </button>

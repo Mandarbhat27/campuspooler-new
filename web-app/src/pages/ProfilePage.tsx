@@ -5,6 +5,11 @@ function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [vehicleName, setVehicleName] = useState('');
+  const [vehicleMileage, setVehicleMileage] = useState('');
+  const [fuelType, setFuelType] = useState('petrol');
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
   useEffect(() => {
     void loadProfile();
@@ -16,10 +21,31 @@ function ProfilePage() {
     try {
       const data = await getProfile();
       setProfile(data);
+      setVehicleName(data.vehicle?.name ?? '');
+      setVehicleMileage(data.vehicle?.mileage_kmpl ? String(data.vehicle.mileage_kmpl) : '');
+      setFuelType(data.vehicle?.fuel_type ?? 'petrol');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVehicleSave = async () => {
+    setUpdateLoading(true);
+    setUpdateMessage(null);
+    try {
+      await updateVehicle({
+        name: vehicleName,
+        mileage_kmpl: Number(vehicleMileage) || 0,
+        fuel_type: fuelType,
+      });
+      setUpdateMessage('Vehicle updated successfully');
+      await loadProfile();
+    } catch (err) {
+      setUpdateMessage(err instanceof Error ? err.message : 'Unable to update vehicle');
+    } finally {
+      setUpdateLoading(false);
     }
   };
 
@@ -51,10 +77,56 @@ function ProfilePage() {
             <p>{profile.phone}</p>
           </div>
           <div className="profile-card">
+            <h3>Account</h3>
+            <p>Role: {profile.role || 'rider'}</p>
+          </div>
+          <div className="profile-card">
             <h3>Vehicle</h3>
             <p>{profile.vehicle?.name || 'Not set'}</p>
             <p>Mileage: {profile.vehicle?.mileage_kmpl ?? 'N/A'} kmpl</p>
             <p>Fuel: {profile.vehicle?.fuel_type ?? 'N/A'}</p>
+            {profile.role === 'rider' ? (
+              <>
+                <hr />
+                <p className="small-text">Update your vehicle details so you can post rides.</p>
+                <label>
+                  Vehicle name
+                  <input
+                    value={vehicleName}
+                    onChange={(e) => setVehicleName(e.target.value)}
+                    placeholder="e.g. Honda City"
+                  />
+                </label>
+                <label>
+                  Mileage (kmpl)
+                  <input
+                    type="number"
+                    min="1"
+                    value={vehicleMileage}
+                    onChange={(e) => setVehicleMileage(e.target.value)}
+                    placeholder="e.g. 40"
+                  />
+                </label>
+                <label>
+                  Fuel type
+                  <select value={fuelType} onChange={(e) => setFuelType(e.target.value)}>
+                    <option value="petrol">petrol</option>
+                    <option value="diesel">diesel</option>
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={handleVehicleSave}
+                  disabled={updateLoading}
+                >
+                  {updateLoading ? 'Saving…' : 'Save vehicle'}
+                </button>
+                {updateMessage && <p className="small-text">{updateMessage}</p>}
+              </>
+            ) : (
+              <p className="small-text">Passengers cannot post rides until they switch to rider mode.</p>
+            )}
           </div>
           <div className="profile-card">
             <h3>Verification</h3>

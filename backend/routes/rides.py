@@ -79,7 +79,7 @@ def find_rides(current_user):
     all_rides = list(rides.find({'status': 'open', 'seats_left': {'$gt': 0}}))
 
     # Run DAA nearby filter
-    nearby = find_nearby_rides(lat, lon, all_rides, max_km=2.0)
+    nearby = find_nearby_rides(lat, lon, all_rides, max_km=5.0)
 
     # Attach rider info and fare estimate to each ride
     result = []

@@ -22,6 +22,50 @@ def make_token(user_id: ObjectId):
         token = token.decode('utf-8')
     return token
 
+def test_find_rides_returns_recent_rides_within_wider_radius(client):
+    rider_doc = user_schema(
+        name='Rider',
+        email='rider2@rvce.edu.in',
+        password_hash='hashed',
+        college='RVCE',
+        year='3',
+        branch='CSE',
+        phone='9999999998',
+        vehicle={'name': 'Car', 'fuel_type': 'petrol', 'mileage_kmpl': 20, 'reg_number': 'KA02'},
+    )
+    rider_res = users.insert_one(rider_doc)
+    rider_id = rider_res.inserted_id
+    rider_token = make_token(rider_id)
+
+    passenger_doc = user_schema(
+        name='Passenger',
+        email='pass2@rvce.edu.in',
+        password_hash='hashed',
+        college='RVCE',
+        year='2',
+        branch='ISE',
+        phone='8888888887'
+    )
+    passenger_res = users.insert_one(passenger_doc)
+    passenger_id = passenger_res.inserted_id
+    passenger_token = make_token(passenger_id)
+
+    post_payload = {
+        'origin_lat': 12.92,
+        'origin_lon': 77.49,
+        'origin_name': 'Magadi Road',
+        'departure_time': '2026-05-22T08:00:00Z',
+        'seats': 2
+    }
+    rv = client.post('/api/rides/post', json=post_payload, headers={'Authorization': f'Bearer {rider_token}'})
+    assert rv.status_code == 201
+
+    rv2 = client.get('/api/rides/find?lat=12.95&lon=77.60', headers={'Authorization': f'Bearer {passenger_token}'})
+    assert rv2.status_code == 200
+    data2 = rv2.get_json()
+    assert len(data2['rides']) >= 1
+
+
 def test_send_and_accept_request_flow(client):
     # Create rider user with vehicle mileage
     rider_doc = user_schema(

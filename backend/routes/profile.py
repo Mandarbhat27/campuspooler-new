@@ -14,6 +14,7 @@ def get_profile(current_user):
         'id':          str(current_user['_id']),
         'name':        current_user['name'],
         'email':       current_user['email'],
+        'role':        current_user.get('role', 'rider'),
         'college':     current_user.get('college', ''),
         'year':        current_user.get('year', ''),
         'branch':      current_user.get('branch', ''),

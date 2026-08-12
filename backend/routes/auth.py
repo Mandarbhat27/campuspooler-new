@@ -70,7 +70,13 @@ def register():
 
     password_hash = bcrypt.generate_password_hash(data['password']).decode('utf-8')
 
-    vehicle = data.get('vehicle', {})   # name, fuel_type, mileage_kmpl, reg_number
+    role = (data.get('role') or 'rider').strip().lower()
+    if role not in {'rider', 'passenger'}:
+        return jsonify({'error': 'Role must be rider or passenger'}), 400
+
+    vehicle = data.get('vehicle') or {}
+    if role == 'passenger':
+        vehicle = {}
 
     new_user = user_schema(
         name          = data['name'],
@@ -82,7 +88,8 @@ def register():
         branch        = data['branch'],
         phone         = data['phone'],
         vehicle       = vehicle,
-        emergency_contact = data.get('emergency_contact', {})
+        emergency_contact = data.get('emergency_contact', {}),
+        role          = role
     )
     result = users.insert_one(new_user)
     return jsonify({'message': 'Registered successfully',
